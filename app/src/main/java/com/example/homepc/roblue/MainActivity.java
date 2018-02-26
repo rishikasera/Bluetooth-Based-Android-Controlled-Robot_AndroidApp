@@ -479,54 +479,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         });
         return false;
     }
-    /*
-    void buttonListner(){
-
-        left = (Button)findViewById(R.id.left);
-        left.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                connectedThread.write("L".getBytes());
-            }
-        });
-
-        right = (Button)findViewById(R.id.right);
-        right.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                connectedThread.write("R".getBytes());
-            }
-        });
-
-        forw = (Button)findViewById(R.id.forw);
-        forw.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                connectedThread.write("F".getBytes());
-            }
-        });
-
-        bakw = (Button)findViewById(R.id.bakw);
-        bakw.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                connectedThread.write("B".getBytes());
-            }
-        });
-
-        stop = (Button)findViewById(R.id.stop);
-        stop.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                connectedThread.write("S".getBytes());
-            }
-        });
-    }*/
+    
     void delay(){
         int i = 0;
         i++;
