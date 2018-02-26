@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         //Toast.makeText(getApplicationContext(), "Total "+i+" Device Found\n"+nm, Toast.LENGTH_SHORT).show();
     }
 
-
+              
     private void init() {
         // TODO Auto-generated method stub
         ll1 = (LinearLayout)findViewById(R.id.ll1);
@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         pairedDevices = new ArrayList<String>();
         filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         devices = new ArrayList<BluetoothDevice>();
-        receiver = new BroadcastReceiver(){
+        receiver = new BroadcastReceiver(){                                <------------------------------Remove listner from here and add after bluetooth validation 
             @Override
             public void onReceive(Context context, Intent intent) {
                 // TODO Auto-generated method stub
