@@ -92,14 +92,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
                     tv.setText("Lets Race.......");
                     String s = "success";
                     connectedThread.write(s.getBytes());
-                   /* connectedThread.write("5".getBytes());
-                    delay();
-                    connectedThread.write("4".getBytes());
-                    delay();
-                    connectedThread.write("3".getBytes());
-                    delay();
-                    connectedThread.write("2".getBytes());
-                    */Log.i(tag, "connected");
+                   Log.i(tag, "connected");
                     break;
                 case MESSAGE_READ:
                     byte[] readBuf = (byte[]) msg.obj;
@@ -116,7 +109,9 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        init();
+        //init();
+		btAdapter = BluetoothAdapter.getDefaultAdapter();
+		
         if(btAdapter==null){
             Toast.makeText(getApplicationContext(), "No bluetooth detected", Toast.LENGTH_SHORT).show();
             finish();
@@ -157,8 +152,11 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         String nm = "";
         if(devicesArray.size()>0){
             for(BluetoothDevice device:devicesArray){
-                pairedDevices.add(device.getName());
-                nm = device.getName().toString();
+				nm = device.getName().toString();
+				if(nm.equals("Roblue"){                         <----------------------------------Add proper condition here
+				       pairedDevices.add(device.getName());    
+                }				
+                
                 i++;
             }
         }
