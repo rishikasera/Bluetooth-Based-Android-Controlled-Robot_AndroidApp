@@ -17,6 +17,8 @@ import android.app.Activity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.Toast;
 import java.io.IOException;
@@ -59,8 +61,8 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
     ImageButton b3;
     ImageButton b4;
 
-    int isOff1 = 0, isOff2 = 0, isOff3 = 0, isOff4 = 0;
 
+    Button fButton;
     LinearLayout ll1;
     LinearLayout ll2;
 
@@ -80,107 +82,51 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
     ConnectedThread connectedThread;
     String tag = "debugging";
 
+    int devBt =0;
 
-    Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            // TODO Auto-generated method stub
-            Log.i(tag, "in handler");
-            super.handleMessage(msg);
-            Toast.makeText(getApplicationContext(), "IN HANDLER...\nmsg : " + msg, Toast.LENGTH_SHORT).show();
-            switch (msg.what) {
-                case SUCCESS_CONNECT:
-                    // DO something
-                    connectedThread = new ConnectedThread((BluetoothSocket) msg.obj);
-                    //      Toast.makeText(getApplicationContext(), "CONNECT", Toast.LENGTH_SHORT).show();
-                    //  listView.setVisibility(View.INVISIBLE);
-                    ll2.setVisibility(View.INVISIBLE);
-                    ll1.setVisibility(View.VISIBLE);
-
-                    tv.setText("Lets Race.......");
-                    String s = "success";
-                    connectedThread.write(s.getBytes());
-                   Log.i(tag, "connected");
-                    break;
-                case MESSAGE_READ:
-                    byte[] readBuf = (byte[]) msg.obj;
-                    String string = new String(readBuf);
-                    Toast.makeText(getApplicationContext(), string, Toast.LENGTH_SHORT).show();
-                    break;
-            }
-        }
-    };
-
+    public void closeMe(View v){
+        finish();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        //init();
-		btAdapter = BluetoothAdapter.getDefaultAdapter();
-		
+       super.onCreate(savedInstanceState);
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+/*
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+  */      setContentView(R.layout.activity_main);
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
+        tv = (TextView)findViewById(R.id.tvPD);
+        fButton = (Button)findViewById(R.id.fbtn);
+        init();
         if(btAdapter==null){
             Toast.makeText(getApplicationContext(), "No bluetooth detected", Toast.LENGTH_SHORT).show();
             finish();
         }
         else{
             if(!btAdapter.isEnabled()){
-                Toast.makeText(getApplicationContext(), "Turning On BT", Toast.LENGTH_SHORT).show();
-                turnOnBT();
+                btAdapter.disable();
+                //btAdapter.cancelDiscovery();
+                Toast.makeText(getApplicationContext(), "Turn On BT and try again.", Toast.LENGTH_SHORT).show();
+                fButton.setVisibility(View.VISIBLE);
+                tv.setText("Turn On BT and try again.");
+                //turnOnBT();
             }
-            //Toast.makeText(getApplicationContext(), "Search for paired Devices", Toast.LENGTH_SHORT).show();
-            getPairedDevices();
-            //Toast.makeText(getApplicationContext(), "Start Discovery", Toast.LENGTH_SHORT).show();
-            checkLocationPermission();
-        }
-
-
-    }
-
-
-
-    private void startDiscovery() {
-        // TODO Auto-generated method stub
-        btAdapter.cancelDiscovery();
-        btAdapter.startDiscovery();
-
-    }
-
-    private void turnOnBT() {
-        // TODO Auto-generated method stub
-        Intent intent =new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        startActivityForResult(intent, 1);
-    }
-
-    private void getPairedDevices() {
-        // TODO Auto-generated method stub
-        devicesArray = btAdapter.getBondedDevices();
-        int i = 0;
-        String nm = "";
-        if(devicesArray.size()>0){
-            for(BluetoothDevice device:devicesArray){
-				nm = device.getName().toString();
-				if(nm.equals("Roblue"){                         <----------------------------------Add proper condition here
-				       pairedDevices.add(device.getName());    
-                }				
-                
-                i++;
+            else {
+                //Toast.makeText(getApplicationContext(), "Search for paired Devices", Toast.LENGTH_SHORT).show();
+                getPairedDevices();
+                //Toast.makeText(getApplicationContext(), "Start Discovery", Toast.LENGTH_SHORT).show();
+                checkLocationPermission();
             }
         }
-        else{
-            Toast.makeText(getApplicationContext(), "No Paired Device Found", Toast.LENGTH_SHORT).show();
-        }
-        //Toast.makeText(getApplicationContext(), "Total "+i+" Device Found\n"+nm, Toast.LENGTH_SHORT).show();
     }
 
-              
     private void init() {
         // TODO Auto-generated method stub
         ll1 = (LinearLayout)findViewById(R.id.ll1);
         ll2 = (LinearLayout)findViewById(R.id.ll2);
 
-        tv = (TextView)findViewById(R.id.tvPD);
 
         btn_Init();
 
@@ -188,11 +134,11 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         listView.setOnItemClickListener(this);
         listAdapter= new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,0);
         listView.setAdapter(listAdapter);
-        btAdapter = BluetoothAdapter.getDefaultAdapter();
+        //btAdapter = BluetoothAdapter.getDefaultAdapter();
         pairedDevices = new ArrayList<String>();
         filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         devices = new ArrayList<BluetoothDevice>();
-        receiver = new BroadcastReceiver(){                                <------------------------------Remove listner from here and add after bluetooth validation 
+        receiver = new BroadcastReceiver(){                     //           <------------------------------Remove listner from here and add after bluetooth validation
             @Override
             public void onReceive(Context context, Intent intent) {
                 // TODO Auto-generated method stub
@@ -202,8 +148,9 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     devices.add(device);
-                    Toast.makeText(getApplicationContext(), "Device : "+device.getName().toString(), Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(getApplicationContext(), "Device : "+device.getName().toString(), Toast.LENGTH_SHORT).show();
                     String s = "";
+                    devBt++;
                     for(int a = 0; a < pairedDevices.size(); a++){
                         if(device.getName().equals(pairedDevices.get(a))){
                             //append
@@ -217,7 +164,15 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
                     // run some code
                 }
                 else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){
-                    // run some code
+                    if(devBt==0){
+                        Toast.makeText(getApplicationContext(), "Turn On Roblue n try again", Toast.LENGTH_SHORT).show();
+                        fButton.setVisibility(View.VISIBLE);
+
+                        tv.setText("Turn On RoBlue n try again");
+                    }else{
+                        devBt = 0;
+                    }
+                    Toast.makeText(getApplicationContext(), "Discovery Finished.", Toast.LENGTH_SHORT).show();
                 }
                 else if(BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)){
                     if(btAdapter.getState() == btAdapter.STATE_OFF){
@@ -236,6 +191,37 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         registerReceiver(receiver, filter);
     }
 
+    private void getPairedDevices() {
+        // TODO Auto-generated method stub
+        devicesArray = btAdapter.getBondedDevices();
+        int i = 0;
+        String nm = "";
+        if(devicesArray.size()>0){
+            for(BluetoothDevice device:devicesArray){
+                nm = device.getName().toString();
+                if(nm.contains("ROBLUE")) {//<------Add proper condition here
+                    pairedDevices.add(device.getName());
+                    i++;
+                }
+            }
+            if(i==0){
+                Toast.makeText(getApplicationContext(), "No ROBLUE in paired device list", Toast.LENGTH_SHORT).show();
+                btAdapter.disable();
+                fButton.setVisibility(View.VISIBLE);
+                tv.setText("No ROBLUE in paired device list.");
+
+            }
+        }
+        else{
+            Toast.makeText(getApplicationContext(), "No Paired Device Found", Toast.LENGTH_SHORT).show();
+            btAdapter.disable();
+            fButton.setVisibility(View.VISIBLE);
+            tv.setText("No Paired Device/ROBLUE Found");
+
+        }
+        //Toast.makeText(getApplicationContext(), "Total "+i+" Device Found\n"+nm, Toast.LENGTH_SHORT).show();
+    }
+
     protected void checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -246,6 +232,24 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
             startDiscovery();
         }
     }
+
+
+    private void startDiscovery() {
+        // TODO Auto-generated method stub
+        btAdapter.cancelDiscovery();
+        btAdapter.startDiscovery();
+
+    }
+
+
+
+    private void turnOnBT() {
+        // TODO Auto-generated method stub
+        Intent intent =new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        //startActivityForResult(intent, 1);
+    }
+
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -261,11 +265,12 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
             }
         }
     }
+
     @Override
     protected void onPause() {
         // TODO Auto-generated method stub
         super.onPause();
-        unregisterReceiver(receiver);
+        //unregisterReceiver(receiver);
     }
 
     @Override
@@ -280,19 +285,21 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 
 
 
-    public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
-                            long arg3) {
+    public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,long arg3) {
         // TODO Auto-generated method stub
-
         if (btAdapter.isDiscovering()) {
             btAdapter.cancelDiscovery();
         }
         if (listAdapter.getItem(arg2).contains("Paired")) {
+            if(listAdapter.getItem(arg2).contains("ROBLUE")) {
 
-            BluetoothDevice selectedDevice = devices.get(arg2);
-            ConnectThread connect = new ConnectThread(selectedDevice);
-            connect.start();
-            Log.i(tag, "in click listener");
+                BluetoothDevice selectedDevice = devices.get(arg2);
+                ConnectThread connect = new ConnectThread(selectedDevice);
+                connect.start();
+                Log.i(tag, "in click listener");
+            }else{
+                Toast.makeText(getApplicationContext(), "No Roblue dedected, turn on roblue, pair it and try againg", Toast.LENGTH_SHORT).show();
+            }
         } else {
             Toast.makeText(getApplicationContext(), "device is not paired", Toast.LENGTH_SHORT).show();
         }
@@ -410,6 +417,42 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
             } catch (IOException e) { }
         }
     }
+
+
+
+    Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            // TODO Auto-generated method stub
+            Log.i(tag, "in handler");
+            super.handleMessage(msg);
+            Toast.makeText(getApplicationContext(), "IN HANDLER...\nmsg : " + msg, Toast.LENGTH_SHORT).show();
+            switch (msg.what) {
+                case SUCCESS_CONNECT:
+                    // DO something
+                    connectedThread = new ConnectedThread((BluetoothSocket) msg.obj);
+                    //      Toast.makeText(getApplicationContext(), "CONNECT", Toast.LENGTH_SHORT).show();
+                    //  listView.setVisibility(View.INVISIBLE);
+                    ll2.setVisibility(View.INVISIBLE);
+                    ll1.setVisibility(View.VISIBLE);
+
+                    tv.setText("Lets Race.......");
+                    String s = "success";
+                    connectedThread.write(s.getBytes());
+                    Log.i(tag, "connected");
+                    break;
+                case MESSAGE_READ:
+                    byte[] readBuf = (byte[]) msg.obj;
+                    String string = new String(readBuf);
+                    Toast.makeText(getApplicationContext(), string, Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+    };
+
+
+
+
 
     boolean btn_Init(){
         b1 =(ImageButton)findViewById(R.id.iB1);
